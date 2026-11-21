@@ -27,14 +27,23 @@
         <span class="hint">所有时间按 UTC 解释</span>
       </div>
 
+      <div class="mode-switch" role="tablist" aria-label="输入方式">
+        <button type="button" class="mode active" role="tab" aria-selected="true" data-mode="full">
+          上传预测与实际值
+        </button>
+        <button type="button" class="mode" role="tab" aria-selected="false" data-mode="recovered">
+          迁库恢复（仅存结果）
+        </button>
+      </div>
+
       <form id="backtestForm" novalidate>
         <div class="field">
           <label for="cutoff">评估截止时间（UTC）</label>
           <input type="datetime-local" id="cutoff" name="cutoff" step="1" required />
-          <small>只使用 issue_time ≤ 截止时间的最新一版预测。</small>
+          <small id="cutoffHint">只使用 issue_time ≤ 截止时间的最新一版预测。</small>
         </div>
 
-        <div class="uploads">
+        <div class="uploads" id="fullUploads">
           <label class="dropzone" id="predictionZone" for="predictionCsv">
             <input type="file" id="predictionCsv" name="prediction_csv" accept=".csv,text/csv" />
             <span class="drop-icon" aria-hidden="true">↑</span>
@@ -52,6 +61,24 @@
           </label>
         </div>
 
+        <div class="uploads" id="recoveredUploads" hidden>
+          <label class="dropzone" id="samplesZone" for="samplesCsv">
+            <input type="file" id="samplesCsv" name="samples_csv" accept=".csv,text/csv" />
+            <span class="drop-icon" aria-hidden="true">↑</span>
+            <strong>明细 CSV（samples）</strong>
+            <span class="drop-meta">series_id, issue_time, target_time, horizon, lead_seconds, lower, upper, width, actual, covered</span>
+            <span class="file-name" data-file-name>点击或拖入文件</span>
+          </label>
+
+          <label class="dropzone" id="summaryZone" for="summaryCsv">
+            <input type="file" id="summaryCsv" name="summary_csv" accept=".csv,text/csv" />
+            <span class="drop-icon" aria-hidden="true">↑</span>
+            <strong>汇总 CSV（summary）</strong>
+            <span class="drop-meta">horizon, sample_count, covered_count, coverage, mean_width</span>
+            <span class="file-name" data-file-name>点击或拖入文件</span>
+          </label>
+        </div>
+
         <div class="actions">
           <button type="submit" class="primary" id="submitBtn">
             <span class="spinner" aria-hidden="true"></span>
@@ -59,24 +86,39 @@
           </button>
           <button type="button" class="ghost" id="demoBtn">填充示例数据</button>
         </div>
-        <p class="form-note">
+        <p class="form-note" id="formNote">
           整批校验：任一目标时刻缺少可用预测或实际值、重复预测、上下界反转、issue_time 晚于
           target_time，都会拒绝整批。
+        </p>
+        <p class="form-note" id="recoverNote" hidden>
+          恢复仅保存结果：核对 (series_id, 目标时刻) 唯一、预测时刻不晚于截止与目标、lead
+          时间 / horizon / 区间宽度 / 命中标记，并按原导出精度重算汇总对照。任何出入整条退回。
         </p>
       </form>
     </section>
 
     <section class="card result-card" id="resultCard" hidden aria-live="polite">
       <div class="card-head">
-        <h2>回测结果</h2>
+        <h2 id="resultTitle">回测结果</h2>
         <span class="badge success" id="resultBadge">已保存</span>
       </div>
       <div id="resultBody"></div>
     </section>
 
+    <section class="card detail-card" id="detailCard" hidden aria-live="polite">
+      <div class="card-head">
+        <h2>历史记录详情</h2>
+        <div class="head-actions">
+          <span class="badge" id="detailBadge"></span>
+          <button type="button" class="ghost small" id="closeDetail">关闭</button>
+        </div>
+      </div>
+      <div id="detailBody"></div>
+    </section>
+
     <section class="card error-card" id="errorCard" hidden aria-live="assertive">
       <div class="card-head">
-        <h2>上传被拒绝</h2>
+        <h2 id="errorTitle">上传被拒绝</h2>
         <span class="badge danger">未保存</span>
       </div>
       <ul id="errorList" class="error-list"></ul>

@@ -1,0 +1,5 @@
+series_id,issue_time,target_time,horizon,lead_seconds,lower,upper,width,actual,covered
+alpha,2026-11-20T12:00:00Z,2026-11-20T13:00:00Z,1h,3600,10.0,11.0,1.0,11.3,false
+alpha,2026-11-20T11:00:00Z,2026-11-20T15:00:00Z,4h,14400,9.0,10.5,1.5,10.2,true
+beta,2026-11-20T11:00:00Z,2026-11-20T13:00:00Z,2h,7200,20.0,22.0,2.0,21.1,true
+beta,2026-11-20T12:00:00Z,2026-11-20T16:00:00Z,4h,14400,19.5,21.5,2.0,22.4,false
