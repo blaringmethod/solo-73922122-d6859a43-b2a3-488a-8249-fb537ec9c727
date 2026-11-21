@@ -1,0 +1,16 @@
+services:
+  backtest:
+    build: .
+    image: interval-backtest:latest
+    container_name: interval-backtest
+    ports:
+      - "${BACKTEST_PORT:-8000}:8000"
+    environment:
+      BACKTEST_DB_PATH: /data/backtest.db
+      BACKTEST_MAX_UPLOAD_BYTES: ${BACKTEST_MAX_UPLOAD_BYTES:-20971520}
+    volumes:
+      - backtest-data:/data
+    restart: unless-stopped
+
+volumes:
+  backtest-data:

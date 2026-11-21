@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>预测区间回测台 · Interval Backtest Workbench</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand">
+      <span class="mark" aria-hidden="true"></span>
+      <div>
+        <h1>预测区间回测台</h1>
+        <p>UTC 时间 · 截止前最新预测 · 按实际 lead time 分组</p>
+      </div>
+    </div>
+    <div class="status" id="serviceStatus">
+      <span class="dot"></span> 服务检查中…
+    </div>
+  </header>
+
+  <main class="layout">
+    <section class="card form-card" aria-labelledby="formTitle">
+      <div class="card-head">
+        <h2 id="formTitle">新建回测</h2>
+        <span class="hint">所有时间按 UTC 解释</span>
+      </div>
+
+      <form id="backtestForm" novalidate>
+        <div class="field">
+          <label for="cutoff">评估截止时间（UTC）</label>
+          <input type="datetime-local" id="cutoff" name="cutoff" step="1" required />
+          <small>只使用 issue_time ≤ 截止时间的最新一版预测。</small>
+        </div>
+
+        <div class="uploads">
+          <label class="dropzone" id="predictionZone" for="predictionCsv">
+            <input type="file" id="predictionCsv" name="prediction_csv" accept=".csv,text/csv" />
+            <span class="drop-icon" aria-hidden="true">↑</span>
+            <strong>预测 CSV</strong>
+            <span class="drop-meta">series_id, issue_time, target_time, lower, upper</span>
+            <span class="file-name" data-file-name>点击或拖入文件</span>
+          </label>
+
+          <label class="dropzone" id="actualZone" for="actualCsv">
+            <input type="file" id="actualCsv" name="actual_csv" accept=".csv,text/csv" />
+            <span class="drop-icon" aria-hidden="true">↑</span>
+            <strong>实际值 CSV</strong>
+            <span class="drop-meta">series_id, target_time, actual</span>
+            <span class="file-name" data-file-name>点击或拖入文件</span>
+          </label>
+        </div>
+
+        <div class="actions">
+          <button type="submit" class="primary" id="submitBtn">
+            <span class="spinner" aria-hidden="true"></span>
+            <span class="label">校验并运行回测</span>
+          </button>
+          <button type="button" class="ghost" id="demoBtn">填充示例数据</button>
+        </div>
+        <p class="form-note">
+          整批校验：任一目标时刻缺少可用预测或实际值、重复预测、上下界反转、issue_time 晚于
+          target_time，都会拒绝整批。
+        </p>
+      </form>
+    </section>
+
+    <section class="card result-card" id="resultCard" hidden aria-live="polite">
+      <div class="card-head">
+        <h2>回测结果</h2>
+        <span class="badge success" id="resultBadge">已保存</span>
+      </div>
+      <div id="resultBody"></div>
+    </section>
+
+    <section class="card error-card" id="errorCard" hidden aria-live="assertive">
+      <div class="card-head">
+        <h2>上传被拒绝</h2>
+        <span class="badge danger">未保存</span>
+      </div>
+      <ul id="errorList" class="error-list"></ul>
+    </section>
+
+    <section class="card history-card" aria-labelledby="historyTitle">
+      <div class="card-head">
+        <h2 id="historyTitle">已保存的回测</h2>
+        <button type="button" class="ghost small" id="refreshHistory">刷新</button>
+      </div>
+      <div id="historyBody" class="history-body">
+        <p class="empty">暂无记录。</p>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
